@@ -1,0 +1,10 @@
+{
+	"id": "obsidian-min3ditorhotkeys-plugin",
+	"name": "Min3ditorHotkeys",
+	"version": "1.0.0",
+	"minAppVersion": "0.9.12",
+	"description": "Additional editor hotkeys inspired by coding editors",
+	"author": "d-sauer",
+	"authorUrl": "https://www.linkedin.com/in/davorsauer/",
+	"isDesktopOnly": false
+}
