@@ -16,11 +16,27 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
-      - name: Upload binaries to release
+      - name: Upload 'manifest.json' to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: manifest.json
+          asset_name: manifest.json
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload 'main.js' to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: main.js
           asset_name: main.js
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload 'styles.css' to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: styles.css
+          asset_name: styles.css
           tag: ${{ github.ref }}
           overwrite: true
