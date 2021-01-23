@@ -1,6 +1,7 @@
 import {
 	Plugin,
 	MarkdownView,
+	Workspace,
   } from "obsidian";
 
   export default class Min3ditorHotkeys extends Plugin {
@@ -46,7 +47,7 @@ import {
 		this.addCommand({
 			id: "editor-ih-duplicate-line",
 			name: "Duplicate line or selection",
-			callback: () => this.duplicateLines(),
+			callback: () => this.duplicate(),
 			hotkeys: [
 			{
 				modifiers: ["Mod"],
@@ -61,57 +62,52 @@ import {
 		console.log("Unloading Min3ditorHotkeys plugin");
 	}
 
-	getSelectedText(editor: CodeMirror.Editor) {
-	  if (editor.somethingSelected()) {
-		//
-		// Get selected text
-		//
-		let cursorStart : CodeMirror.Position = editor.getCursor("from");
-		let cursorEnd : CodeMirror.Position = editor.getCursor("to");
-		let content = editor.getRange(
-		  { line: cursorStart.line, ch: cursorStart.ch },
-		  { line: cursorEnd.line, ch: cursorEnd.ch }
-		);
+	duplicate() {
+	  var activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+	  if (activeView == null) {
+		return;
+	  }
 
-		return {
-		  start: { line: cursorStart.line, ch: cursorStart.ch },
-		  content: content,
-		};
+	  var editor = activeView.sourceMode.cmEditor
+	  if (editor.somethingSelected()) {
+		this.duplicateSelection(editor);
 	  } else {
-		//
-		// Get current line
-		//
-		var lineNr = editor.getCursor().line;
-		var contents = editor.getDoc().getLine(lineNr);
-		let cursorStart = {
-		  line: lineNr,
-		  ch: 0,
-		};
-		let cursorEnd = {
-		  line: lineNr,
-		  ch: contents.length,
-		};
-		let content = editor.getRange(cursorStart, cursorEnd) + "\n";
-		return { start: cursorStart, content: content };
+		this.duplicateLine(editor);
 	  }
 	}
 
-	duplicateLines() {
-	  var activeLeaf = this.app.workspace.activeLeaf.view as MarkdownView;
-	  var editor = activeLeaf.sourceMode.cmEditor
-	  var selectedText = this.getSelectedText(editor);
-	  var newString = selectedText.content;
-	  editor.replaceRange(newString, selectedText.start, selectedText.start);
-	}
+	duplicateSelection(editor: CodeMirror.Editor) {
+		let cursorStart : CodeMirror.Position = editor.getCursor("from");
+		let cursorEnd : CodeMirror.Position = editor.getCursor("to");
+		let content = editor.getRange(
+			{ line: cursorStart.line, ch: cursorStart.ch },
+			{ line: cursorEnd.line, ch: cursorEnd.ch }
+			);
 
+		 editor.replaceRange(content, cursorStart, cursorStart);
+		}
+
+	duplicateLine(editor: CodeMirror.Editor) {
+		var lineNr = editor.getCursor().line;
+		var contents = editor.getDoc().getLine(lineNr);
+		let cursorStart = {line: lineNr, ch: 0};
+		let cursorEnd = {  line: lineNr, ch: contents.length};
+		let content = editor.getRange(cursorStart, cursorEnd) + "\n";
+
+		editor.replaceRange(content, cursorStart, cursorStart);
+	}
 
 	/**
 	 * Create new line before or after the current line
 	 * @param after true if new line will be created after current line
 	 */
 	newLine(after: boolean = false) {
-		var activeLeaf = this.app.workspace.activeLeaf.view as MarkdownView;
-		var editor = activeLeaf.sourceMode.cmEditor
+		var activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (activeView == null) {
+			return;
+		}
+
+		var editor = activeView.sourceMode.cmEditor
 		var offset = (after ? 1 : 0);
 		let cursorStart = {
 			line: editor.getCursor().line + offset,
